@@ -129,10 +129,10 @@ module Invidious::Search
       when .channel?
         items = Processors.channel(self)
         #
-      when .subscriptions?
-        if user
-          items = Processors.subscriptions(self, user.as(Invidious::User))
-        end
+        #   when .subscriptions?
+        #     if user
+        #       items = Processors.subscriptions(self, user.as(Invidious::User))
+        #     end
       end
 
       return items

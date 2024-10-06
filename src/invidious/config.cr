@@ -220,21 +220,24 @@ class Config
     end
 
     # Build database_url from db.* if it's not set directly
-    if config.database_url.to_s.empty?
-      if db = config.db
-        config.database_url = URI.new(
-          scheme: "postgres",
-          user: db.user,
-          password: db.password,
-          host: db.host,
-          port: db.port,
-          path: db.dbname,
-        )
-      else
-        puts "Config: Either database_url or db.* is required"
-        exit(1)
+
+    {% unless flag?(:api_only) %}
+      if config.database_url.to_s.empty?
+        if db = config.db
+          config.database_url = URI.new(
+            scheme: "postgres",
+            user: db.user,
+            password: db.password,
+            host: db.host,
+            port: db.port,
+            path: db.dbname,
+          )
+        else
+          puts "Config: Either database_url or db.* is required"
+          exit(1)
+        end
       end
-    end
+    {% end %}
 
     return config
   end

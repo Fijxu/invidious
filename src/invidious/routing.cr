@@ -233,15 +233,21 @@ module Invidious::Routing
       get "/api/v1/videos/:id", {{namespace}}::Videos, :videos
       get "/api/v1/storyboards/:id", {{namespace}}::Videos, :storyboards
       get "/api/v1/captions/:id", {{namespace}}::Videos, :captions
-      get "/api/v1/annotations/:id", {{namespace}}::Videos, :annotations
+	  {% unless flag?(:api_only) %}
+      get "/api/v1/annotations/:id", {{namespace}}::Videos, :annotation
+	  {% end %}
       get "/api/v1/comments/:id", {{namespace}}::Videos, :comments
       get "/api/v1/clips/:id", {{namespace}}::Videos, :clips
 
       # Feeds
+	  {% unless flag?(:api_only) %}
       get "/api/v1/trending", {{namespace}}::Feeds, :trending
       get "/api/v1/popular", {{namespace}}::Feeds, :popular
+	  {% end %} 
 
       # Channels
+	  
+	  {% unless flag?(:api_only) %}
       get "/api/v1/channels/:ucid", {{namespace}}::Channels, :home
       get "/api/v1/channels/:ucid/shorts", {{namespace}}::Channels, :shorts
       get "/api/v1/channels/:ucid/streams", {{namespace}}::Channels, :streams
@@ -255,6 +261,8 @@ module Invidious::Routing
         get "/api/v1/channels/:ucid/#{{{route}}}", {{namespace}}::Channels, :{{route}}
       {% end %}
 
+{% end %}
+
       # Posts
       get "/api/v1/post/:id", {{namespace}}::Channels, :post
       get "/api/v1/post/:id/comments", {{namespace}}::Channels, :post_comments
@@ -265,8 +273,11 @@ module Invidious::Routing
 
       # Search
       get "/api/v1/search", {{namespace}}::Search, :search
+	  {% unless flag?(:api_only) %}
       get "/api/v1/search/suggestions", {{namespace}}::Search, :search_suggestions
       get "/api/v1/hashtag/:hashtag", {{namespace}}::Search, :hashtag
+
+{% end %}
 
 
       # Authenticated
@@ -275,6 +286,8 @@ module Invidious::Routing
       #
       # Invidious::Routing.get "/api/v1/auth/notifications", {{namespace}}::Authenticated, :notifications
       # Invidious::Routing.post "/api/v1/auth/notifications", {{namespace}}::Authenticated, :notifications
+
+	  {% unless flag?(:api_only) %}
 
       get "/api/v1/auth/preferences", {{namespace}}::Authenticated, :get_preferences
       post "/api/v1/auth/preferences", {{namespace}}::Authenticated, :set_preferences
@@ -315,6 +328,7 @@ module Invidious::Routing
       get "/api/v1/auth/playlists/:plid", {{namespace}}::Misc, :get_playlist
       get "/api/v1/mixes/:rdid", {{namespace}}::Misc, :mixes
       get "/api/v1/resolveurl", {{namespace}}::Misc, :resolve_url
+{% end %}
     {% end %}
   end
 end

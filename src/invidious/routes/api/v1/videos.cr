@@ -2,7 +2,9 @@ require "html"
 
 module Invidious::Routes::API::V1::Videos
   def self.videos(env)
-    locale = env.get("preferences").as(Preferences).locale
+    {% unless flag?(:api_only) %}
+      locale = env.get("preferences").as(Preferences).locale
+    {% end %}
 
     env.response.content_type = "application/json"
 
@@ -19,7 +21,7 @@ module Invidious::Routes::API::V1::Videos
     end
 
     return JSON.build do |json|
-      Invidious::JSONify::APIv1.video(video, json, locale: locale, proxy: proxy)
+      Invidious::JSONify::APIv1.video(video, json, locale: "en-US", proxy: proxy)
     end
   end
 

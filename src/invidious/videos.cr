@@ -295,27 +295,29 @@ struct Video
 end
 
 def get_video(id, refresh = true, region = nil, force_refresh = false)
-  if (video = Invidious::Database::Videos.select(id)) && !region
-    # If record was last updated over 10 minutes ago, or video has since premiered,
-    # refresh (expire param in response lasts for 6 hours)
-    if (refresh &&
-       (Time.utc - video.updated > 10.minutes) ||
-       (video.premiere_timestamp.try &.< Time.utc)) ||
-       force_refresh ||
-       video.schema_version != Video::SCHEMA_VERSION # cache control
-      begin
-        video = fetch_video(id, region)
-        Invidious::Database::Videos.update(video)
-      rescue ex
-        Invidious::Database::Videos.delete(id)
-        raise ex
+  {% unless flag?(:api_only) %}
+    if (video = Invidious::Database::Videos.select(id)) && !region
+      # If record was last updated over 10 minutes ago, or video has since premiered,
+      # refresh (expire param in response lasts for 6 hours)
+      if (refresh &&
+         (Time.utc - video.updated > 10.minutes) ||
+         (video.premiere_timestamp.try &.< Time.utc)) ||
+         force_refresh ||
+         video.schema_version != Video::SCHEMA_VERSION # cache control
+        begin
+          video = fetch_video(id, region)
+          Invidious::Database::Videos.update(video)
+        rescue ex
+          Invidious::Database::Videos.delete(id)
+          raise ex
+        end
       end
+    else
+      video = fetch_video(id, region)
+      Invidious::Database::Videos.insert(video) if !region
     end
-  else
-    video = fetch_video(id, region)
-    Invidious::Database::Videos.insert(video) if !region
-  end
-
+  {% end %}
+  video = fetch_video(id, region)
   return video
 rescue DB::Error
   # Avoid common `DB::PoolRetryAttemptsExceeded` error and friends

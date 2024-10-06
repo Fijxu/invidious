@@ -1,6 +1,6 @@
 module Invidious::Routes::API::V1::Search
   def self.search(env)
-    locale = env.get("preferences").as(Preferences).locale
+    # locale = env.get("preferences").as(Preferences).locale
     region = env.params.query["region"]?
 
     env.response.content_type = "application/json"
@@ -16,7 +16,7 @@ module Invidious::Routes::API::V1::Search
     JSON.build do |json|
       json.array do
         search_results.each do |item|
-          item.to_json(locale, json)
+          item.to_json("en-US", json)
         end
       end
     end
