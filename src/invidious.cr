@@ -60,7 +60,7 @@ alias IV = Invidious
 CONFIG   = Config.load
 HMAC_KEY = CONFIG.hmac_key
 
-PG_DB       = DB.open CONFIG.database_url
+# PG_DB       = DB.open CONFIG.database_url
 ARCHIVE_URL = URI.parse("https://archive.org")
 PUBSUB_URL  = URI.parse("https://pubsubhubbub.appspot.com")
 REDDIT_URL  = URI.parse("https://www.reddit.com")
@@ -121,10 +121,12 @@ Kemal.config.extra_options do |parser|
     puts SOFTWARE.to_pretty_json
     exit
   end
-  parser.on("--migrate", "Run any migrations (beta, use at your own risk!!") do
-    Invidious::Database::Migrator.new(PG_DB).migrate
-    exit
-  end
+  {% unless flag?(:api_only) %}
+    parser.on("--migrate", "Run any migrations (beta, use at your own risk!!") do
+      Invidious::Database::Migrator.new(PG_DB).migrate
+      exit
+    end
+  {% end %}
 end
 
 Kemal::CLI.new ARGV
@@ -136,7 +138,9 @@ OUTPUT = CONFIG.output.upcase == "STDOUT" ? STDOUT : File.open(CONFIG.output, mo
 LOGGER = Invidious::LogHandler.new(OUTPUT, CONFIG.log_level)
 
 # Check table integrity
-Invidious::Database.check_integrity(CONFIG)
+{% unless flag?(:api_only) %}
+  Invidious::Database.check_integrity(CONFIG)
+{% end %}
 
 {% if !flag?(:skip_videojs_download) %}
   # Resolve player dependencies. This is done at compile time.
@@ -163,45 +167,43 @@ DECRYPT_FUNCTION =
   end
 
 # Start jobs
+{% unless flag?(:api_only) %}
+  if CONFIG.channel_threads > 0
+    Invidious::Jobs.register Invidious::Jobs::RefreshChannelsJob.new(PG_DB)
+  end
+  if CONFIG.feed_threads > 0
+    Invidious::Jobs.register Invidious::Jobs::RefreshFeedsJob.new(PG_DB)
+  end
+  if CONFIG.statistics_enabled
+    Invidious::Jobs.register Invidious::Jobs::StatisticsRefreshJob.new(PG_DB, SOFTWARE)
+  end
+  if (CONFIG.use_pubsub_feeds.is_a?(Bool) && CONFIG.use_pubsub_feeds.as(Bool)) || (CONFIG.use_pubsub_feeds.is_a?(Int32) && CONFIG.use_pubsub_feeds.as(Int32) > 0)
+    Invidious::Jobs.register Invidious::Jobs::SubscribeToFeedsJob.new(PG_DB, HMAC_KEY)
+  end
 
-if CONFIG.channel_threads > 0
-  Invidious::Jobs.register Invidious::Jobs::RefreshChannelsJob.new(PG_DB)
-end
-
-if CONFIG.feed_threads > 0
-  Invidious::Jobs.register Invidious::Jobs::RefreshFeedsJob.new(PG_DB)
-end
-
-if CONFIG.statistics_enabled
-  Invidious::Jobs.register Invidious::Jobs::StatisticsRefreshJob.new(PG_DB, SOFTWARE)
-end
-
-if (CONFIG.use_pubsub_feeds.is_a?(Bool) && CONFIG.use_pubsub_feeds.as(Bool)) || (CONFIG.use_pubsub_feeds.is_a?(Int32) && CONFIG.use_pubsub_feeds.as(Int32) > 0)
-  Invidious::Jobs.register Invidious::Jobs::SubscribeToFeedsJob.new(PG_DB, HMAC_KEY)
-end
-
-if CONFIG.popular_enabled
-  Invidious::Jobs.register Invidious::Jobs::PullPopularVideosJob.new(PG_DB)
-end
-
-CONNECTION_CHANNEL = ::Channel({Bool, ::Channel(PQ::Notification)}).new(32)
-Invidious::Jobs.register Invidious::Jobs::NotificationJob.new(CONNECTION_CHANNEL, CONFIG.database_url)
+  if CONFIG.popular_enabled
+    Invidious::Jobs.register Invidious::Jobs::PullPopularVideosJob.new(PG_DB)
+  end
+  CONNECTION_CHANNEL = ::Channel({Bool, ::Channel(PQ::Notification)}).new(32)
+  Invidious::Jobs.register Invidious::Jobs::NotificationJob.new(CONNECTION_CHANNEL, CONFIG.database_url)
 
 Invidious::Jobs.register Invidious::Jobs::ClearExpiredItemsJob.new
 
 Invidious::Jobs.register Invidious::Jobs::InstanceListRefreshJob.new
 
-Invidious::Jobs.start_all
+  Invidious::Jobs.start_all
 
-def popular_videos
-  Invidious::Jobs::PullPopularVideosJob::POPULAR_VIDEOS.get
-end
+  def popular_videos
+    Invidious::Jobs::PullPopularVideosJob::POPULAR_VIDEOS.get
+  end
+{% end %}
 
 # Routing
-
-before_all do |env|
-  Invidious::Routes::BeforeAll.handle(env)
-end
+{% unless flag?(:api_only) %}
+  before_all do |env|
+    Invidious::Routes::BeforeAll.handle(env)
+  end
+{% end %}
 
 Invidious::Routing.register_all
 
