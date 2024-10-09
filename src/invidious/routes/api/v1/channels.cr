@@ -233,7 +233,7 @@ module Invidious::Routes::API::V1::Channels
   end
 
   def self.streams(env)
-    locale = env.get("preferences").as(Preferences).locale
+    # locale = env.get("preferences").as(Preferences).locale
     ucid = env.params.url["ucid"]
 
     env.response.content_type = "application/json"
@@ -269,7 +269,7 @@ module Invidious::Routes::API::V1::Channels
       json.object do
         json.field "videos" do
           json.array do
-            videos.each &.to_json(locale, json)
+            videos.each &.to_json("en-US", json)
           end
         end
 
