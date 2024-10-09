@@ -322,6 +322,7 @@ def produce_playlist_continuation(id, index)
 end
 
 def get_playlist(plid : String)
+		  {% unless flag?(:api_only) %}
   if plid.starts_with? "IV"
     if playlist = Invidious::Database::Playlists.select(id: plid)
       return playlist
@@ -329,8 +330,11 @@ def get_playlist(plid : String)
       raise NotFoundException.new("Playlist does not exist.")
     end
   else
+		  {% end %}
     return fetch_playlist(plid)
+		  {% unless flag?(:api_only) %}
   end
+  	  {% end %}
 end
 
 def fetch_playlist(plid : String)

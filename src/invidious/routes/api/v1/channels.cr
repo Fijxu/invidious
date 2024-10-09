@@ -3,7 +3,7 @@ module Invidious::Routes::API::V1::Channels
   # This sets the `channel` variable, or handles Exceptions.
   private macro get_channel
     begin
-      channel = get_about_info(ucid, locale)
+      channel = get_about_info(ucid, "en-US")
     rescue ex : ChannelRedirect
       env.response.headers["Location"] = env.request.resource.gsub(ucid, ex.channel_id)
       return error_json(302, "Channel is unavailable", {"authorId" => ex.channel_id})
@@ -15,7 +15,8 @@ module Invidious::Routes::API::V1::Channels
   end
 
   def self.home(env)
-    locale = env.get("preferences").as(Preferences).locale
+	puts "test"
+    # locale = env.get("preferences").as(Preferences).locale
     ucid = env.params.url["ucid"]
 
     env.response.content_type = "application/json"
@@ -108,7 +109,7 @@ module Invidious::Routes::API::V1::Channels
         json.field "latestVideos" do
           json.array do
             videos.each do |video|
-              video.to_json(locale, json)
+              video.to_json("en-US", json)
             end
           end
         end
@@ -123,7 +124,7 @@ module Invidious::Routes::API::V1::Channels
             end
 
             related_channels.each do |related_channel|
-              related_channel.to_json(locale, json)
+              related_channel.to_json("en-US", json)
             end
           end
         end # relatedChannels

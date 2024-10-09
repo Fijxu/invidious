@@ -247,8 +247,8 @@ module Invidious::Routing
 
       # Channels
 	  
-	  {% unless flag?(:api_only) %}
       get "/api/v1/channels/:ucid", {{namespace}}::Channels, :home
+	  {% unless flag?(:api_only) %}
       get "/api/v1/channels/:ucid/shorts", {{namespace}}::Channels, :shorts
       get "/api/v1/channels/:ucid/streams", {{namespace}}::Channels, :streams
       get "/api/v1/channels/:ucid/podcasts", {{namespace}}::Channels, :podcasts
