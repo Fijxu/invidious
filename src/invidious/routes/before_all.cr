@@ -19,38 +19,6 @@ module Invidious::Routes::BeforeAll
     env.set "preferences", preferences
     env.response.headers["X-XSS-Protection"] = "1; mode=block"
     env.response.headers["X-Content-Type-Options"] = "nosniff"
-
-    # Allow media resources to be loaded from google servers
-    # TODO: check if *.youtube.com can be removed
-    if CONFIG.disabled?("local") || !preferences.local
-      extra_media_csp = " https://*.googlevideo.com:443 https://*.youtube.com:443"
-    else
-      extra_media_csp = ""
-    end
-
-    # Only allow the pages at /embed/* to be embedded
-    if env.request.resource.starts_with?("/embed")
-      frame_ancestors = "'self' file: http: https:"
-    else
-      frame_ancestors = "'none'"
-    end
-
-    # TODO: Remove style-src's 'unsafe-inline', requires to remove all
-    # inline styles (<style> [..] </style>, style=" [..] ")
-    env.response.headers["Content-Security-Policy"] = {
-      "default-src 'none'",
-      "script-src 'self'",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data:",
-      "font-src 'self' data:",
-      "connect-src 'self'",
-      "manifest-src 'self'",
-      "media-src 'self' blob:" + extra_media_csp,
-      "child-src 'self' blob:",
-      "frame-src 'self'",
-      "frame-ancestors " + frame_ancestors,
-    }.join("; ")
-
     env.response.headers["Referrer-Policy"] = "same-origin"
 
     # Ask the chrom*-based browsers to disable FLoC
@@ -109,6 +77,37 @@ module Invidious::Routes::BeforeAll
     preferences.thin_mode = thin_mode
     preferences.locale = locale
     env.set "preferences", preferences
+
+    # Allow media resources to be loaded from google servers
+    # TODO: check if *.youtube.com can be removed
+    if CONFIG.disabled?("local") || !preferences.local
+      extra_media_csp = " https://*.googlevideo.com:443 https://*.youtube.com:443"
+    else
+      extra_media_csp = ""
+    end
+
+    # Only allow the pages at /embed/* to be embedded
+    if env.request.resource.starts_with?("/embed")
+      frame_ancestors = "'self' file: http: https:"
+    else
+      frame_ancestors = "'none'"
+    end
+
+    # TODO: Remove style-src's 'unsafe-inline', requires to remove all
+    # inline styles (<style> [..] </style>, style=" [..] ")
+    env.response.headers["Content-Security-Policy"] = {
+      "default-src 'none'",
+      "script-src 'self'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data:",
+      "font-src 'self' data:",
+      "connect-src 'self'",
+      "manifest-src 'self'",
+      "media-src 'self' blob:" + extra_media_csp,
+      "child-src 'self' blob:",
+      "frame-src 'self'",
+      "frame-ancestors " + frame_ancestors,
+    }.join("; ")
 
     current_page = env.request.path
     if env.request.query
