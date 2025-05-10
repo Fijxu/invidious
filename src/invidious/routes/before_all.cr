@@ -80,6 +80,14 @@ module Invidious::Routes::BeforeAll
 
     # Allow media resources to be loaded from google servers
     # TODO: check if *.youtube.com can be removed
+    #
+    # `!preferences.local` has to be checked after setting and
+    # reading `preferences` from the "PREFS" cookie and
+    # saved user preferences from the database, otherwise
+    # the `extra_media_csp` variable will be always empty if
+    # `default_user_preferences.local` is set to true on the
+    # configuration file, causing preference “Proxy Videos”
+    # not to work.
     if CONFIG.disabled?("local") || !preferences.local
       extra_media_csp = " https://*.googlevideo.com:443 https://*.youtube.com:443"
     else
