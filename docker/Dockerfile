@@ -20,12 +20,15 @@ COPY ./assets/ ./assets/
 COPY ./videojs-dependencies.yml ./videojs-dependencies.yml
 
 RUN --mount=type=cache,target=/root/.cache/crystal \
-    ls /root/.cache/crystal
+    ls -R /root/.cache/crystal
+
+RUN --mount=type=cache,target=/root/.cache/crystal \
+    crystal env
 
 RUN crystal spec --warnings all \
     --link-flags "-lxml2 -llzma"    
 RUN --mount=type=cache,target=/root/.cache/crystal if [[ "${release}" == 1 ]] ; then \
-        crystal build ./src/invidious.cr \
+        crystal build ./src/invidious.cr -p -t -s\
         --release \
         --static --warnings all \
         --link-flags "-lxml2 -llzma"; \
