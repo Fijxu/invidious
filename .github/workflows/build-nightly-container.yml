@@ -61,6 +61,23 @@ jobs:
           labels: |
             quay.expires-after=12w
 
+      - name: Cache Invidious compilation objects
+        uses: actions/cache@v4
+        id: cache
+        with:
+          path: |
+            invidious-compilation-cache
+          key: cache-${{ hashFiles('.github/workflows/build-nightly-container.yml') }}-${{ matrix.os }}
+
+      - name: Inject cache into Docker
+        uses: reproducible-containers/buildkit-cache-dance@v3.1.0
+        with:
+          cache-map: |
+            {
+              "invidious-compilation-cache": "/root/.cache/crystal",
+            }
+          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+
       - name: Build and push Docker ${{ matrix.name }} image for Push Event
         uses: docker/build-push-action@v6
         with:
