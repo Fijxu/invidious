@@ -19,6 +19,9 @@ COPY ./scripts/ ./scripts/
 COPY ./assets/ ./assets/
 COPY ./videojs-dependencies.yml ./videojs-dependencies.yml
 
+RUN --mount=type=cache,target=/root/.cache/crystal \
+    ls /root/.cache/crystal
+
 RUN crystal spec --warnings all \
     --link-flags "-lxml2 -llzma"    
 RUN --mount=type=cache,target=/root/.cache/crystal if [[ "${release}" == 1 ]] ; then \
