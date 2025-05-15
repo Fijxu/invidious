@@ -70,7 +70,7 @@ HOST_URL    = make_host_url(Kemal.config)
 
 CHARS_SAFE         = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
 TEST_IDS           = {"AgbeGFYluEA", "BaW_jenozKc", "a9LDPn-MO4I", "ddFvjfvPnqk", "iqKdEhx-dD4"}
-MAX_ITEMS_PER_PAGE = 1500
+MAX_ITEMS_PER_PAGE = 2000
 
 REQUEST_HEADERS_WHITELIST  = {"accept", "accept-encoding", "cache-control", "content-length", "if-none-match", "range"}
 RESPONSE_HEADERS_BLACKLIST = {"access-control-allow-origin", "alt-svc", "server"}
@@ -86,7 +86,7 @@ CURRENT_VERSION = {{ "#{`git log -1 --format=%ci | awk '{print $1}' | sed s/-/./
 ASSET_COMMIT = {{ "#{`git rev-list HEAD --max-count=1 --abbrev-commit -- assets`.strip}" }}
 
 SOFTWARE = {
-  "name"    => "invidiouss",
+  "name"    => "invidiousss",
   "version" => "#{CURRENT_VERSION}-#{CURRENT_COMMIT}",
   "branch"  => "#{CURRENT_BRANCH}",
 }
