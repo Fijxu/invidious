@@ -70,6 +70,13 @@ jobs:
             ./bin
           key: shards-${{ hashFiles('shard.lock') }}
 
+      - name: Cache VideoJS dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ./assets/videojs
+          key: videojs-dependencies-${{ hashFiles('./assets/videojs') }}
+
       - name: Install Shards
         run: |
           if ! shards check; then
