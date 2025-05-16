@@ -44,7 +44,7 @@ jobs:
       - name: Login to registry
         uses: docker/login-action@v3
         with:
-          registry: quay.io
+          registry: git.nadeko.net
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_PASSWORD }}
 
@@ -52,7 +52,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: quay.io/invidious/invidious
+          images: git.nadeko.net/invidious/invidious
           flavor: |
             suffix=${{ matrix.tag_suffix }}
           tags: |
