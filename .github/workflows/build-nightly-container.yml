@@ -39,12 +39,12 @@ jobs:
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_PASSWORD }}
 
-      # - name: Cache shards
-      #   uses: actions/cache@v4
-      #   id: shards-cache
-      #   with:
-      #     path: shards-lib
-      #     key: docker-shards-${{ hashFiles('shard.lock') }}
+      - name: Cache shards
+        uses: actions/cache@v4
+        id: shards-cache
+        with:
+          path: shards-lib
+          key: docker-shards-${{ hashFiles('shard.lock') }}
 
       - name: Cache crystal build cache (mainly scripts)
         uses: actions/cache@v4
@@ -53,15 +53,15 @@ jobs:
           path: scripts-cache
           key: docker-crystal-${{ hashFiles('./scripts') }}
 
-      # - name: Restore Docker cache mounts
-      #   uses: reproducible-containers/buildkit-cache-dance@v3
-      #   with:
-      #     builder: ${{ steps.setup-buildx.outputs.name }}
-      #     cache-map: |
-      #       {
-      #         "shards-lib": "/invidious/lib"
-      #       }
-      #     skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+      - name: Restore Docker cache mounts
+        uses: reproducible-containers/buildkit-cache-dance@v3
+        with:
+          builder: ${{ steps.setup-buildx.outputs.name }}
+          cache-map: |
+            {
+              "shards-lib": "./lib"
+            }
+          skip-extraction: ${{ steps.shards-cache.outputs.cache-hit }}
 
       - name: Restore Docker cache mounts
         uses: reproducible-containers/buildkit-cache-dance@v3

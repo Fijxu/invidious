@@ -7,7 +7,8 @@ ARG release
 WORKDIR /invidious
 COPY ./shard.yml ./shard.yml
 COPY ./shard.lock ./shard.lock
-RUN shards install --production
+RUN --mount=type=cache,target=./lib \
+    shards install --production
 
 COPY ./src/ ./src/
 # TODO: .git folder is required for building – this is destructive.
