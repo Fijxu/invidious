@@ -23,7 +23,6 @@ RUN crystal spec --warnings all \
     --link-flags "-lxml2 -llzma"    
 RUN --mount=type=cache,target=/root/.cache/crystal if [[ "${release}" == 1 ]] ; then \
         crystal build ./src/invidious.cr \
-        --release \
         --static --warnings all \
         --link-flags "-lxml2 -llzma"; \
     else \
