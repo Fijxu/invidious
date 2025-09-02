@@ -13,7 +13,11 @@ module Invidious::Routes::API::V1::Search
       return error_json(400, ex)
     end
 
-    JSON.build do |json|
+    search_results.each do |item|
+      pp item
+    end
+
+    return JSON.build do |json|
       json.array do
         search_results.each do |item|
           item.to_json(locale, json)

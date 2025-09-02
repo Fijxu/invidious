@@ -41,8 +41,14 @@ def text_to_parsed_content(text : String) : JSON::Any
 end
 
 def parse_content(content : JSON::Any, video_id : String? = "") : String
+  pp content
   content["simpleText"]?.try &.as_s.rchop('\ufeff').try { |b| HTML.escape(b) }.to_s ||
-    content["runs"]?.try &.as_a.try { |r| content_to_comment_html(r, video_id).try &.to_s.gsub("\n", "<br>") } || ""
+    content["runs"]?.try &.as_a.try { |r| content_to_comment_html(r, video_id).try &.to_s.gsub("\n", "<br>") } ||
+    content.dig("simpleText", "runs", 0, "text").try &.as_s.rchop('\u00A0').try { |b| HTML.escape(b) }.to_s || ""
+end
+
+def parse_description_2(content : JSON::Any, video_id : String? = "") : String
+  content.dig("simpleText", "runs", 0, "text").try &.as_s.rchop('\u00A0').try { |b| HTML.escape(b) }.to_s || ""
 end
 
 def content_to_comment_html(content, video_id : String? = "")
