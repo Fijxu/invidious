@@ -1,6 +1,7 @@
-FROM crystallang/crystal:1.16.3-alpine AS builder
+FROM 84codes/crystal:1.16.3-debian-12 AS builder
 
-RUN apk add --no-cache sqlite-static yaml-static
+RUN apt update && \
+    apt install -y --no-install-recommends liblzma-dev libsqlite3-dev
 
 ARG release
 
@@ -24,19 +25,23 @@ RUN crystal spec --warnings all \
 RUN --mount=type=cache,target=/root/.cache/crystal if [[ "${release}" == 1 ]] ; then \
         crystal build ./src/invidious.cr \
         --release \
-        --static --warnings all \
+        --warnings all \
         --link-flags "-lxml2 -llzma"; \
     else \
         crystal build ./src/invidious.cr \
-        --static --warnings all \
+        --warnings all \
         --link-flags "-lxml2 -llzma"; \
     fi
 
-FROM alpine:3.21
-RUN apk add --no-cache rsvg-convert ttf-opensans tini tzdata
+FROM debian:12-slim
+RUN apt update && \
+    DEBIAN_FRONTEND=noninteractive \
+    apt install -y --no-install-recommends \
+    librsvg2-bin fonts-open-sans tini tzdata \
+    libyaml-0-2 libsqlite3-0 libssl3 liblzma5 ca-certificates
 WORKDIR /invidious
-RUN addgroup -g 1000 -S invidious && \
-    adduser -u 1000 -S invidious -G invidious
+RUN groupadd --gid 1000 --system invidious && \
+    useradd --uid 1000 --system invidious -g invidious
 COPY --chown=invidious ./config/config.* ./config/
 RUN mv -n config/config.example.yml config/config.yml
 RUN sed -i 's/host: \(127.0.0.1\|localhost\)/host: invidious-db/' config/config.yml
@@ -45,8 +50,11 @@ COPY ./locales/ ./locales/
 COPY --from=builder /invidious/assets ./assets/
 COPY --from=builder /invidious/invidious .
 RUN chmod o+rX -R ./assets ./config ./locales
+RUN apt-get clean autoclean && \
+    apt-get autoremove --yes && \
+    rm -rf /var/lib/apt /var/lib/dpkg /var/lib/cache /var/lib/log
 
 EXPOSE 3000
 USER invidious
-ENTRYPOINT ["/sbin/tini", "--"]
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD [ "/invidious/invidious" ]
