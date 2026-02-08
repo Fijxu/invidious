@@ -143,6 +143,8 @@ def get_about_info(ucid, locale) : AboutChannel
     end
   end
 
+  auto_generated = true if author.ends_with?(" - Topic")
+
   allowed_regions = initdata
     .dig?("microformat", "microformatDataRenderer", "availableCountries")
     .try &.as_a.map(&.as_s) || [] of String

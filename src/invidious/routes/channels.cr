@@ -27,6 +27,14 @@ module Invidious::Routes::Channels
         channel.ucid, channel.author, continuation, sort_by
       )
 
+      puts typeof(items)
+
+      if i = items.try &.[0]
+        if i.is_a?(Category)
+          items = i.contents
+        end
+      end
+
       items.uniq! do |item|
         if item.responds_to?(:title)
           item.title
@@ -34,6 +42,9 @@ module Invidious::Routes::Channels
           item.author
         end
       end
+
+      pp items
+
       items = items.select(SearchPlaylist)
       items.each(&.author = "")
     else
