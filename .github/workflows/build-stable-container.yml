@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - "v*"
+      - "v*-actions"
 
 jobs:
   release:
@@ -43,7 +43,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v6
         with:
-          images: quay.io/invidious/invidious
+          images: quay.io/fijxu/invidious
           flavor: |
             latest=false
             suffix=${{ matrix.tag_suffix }}

@@ -5,8 +5,9 @@ on:
     - cron: "0 0 * * *" # Every day at 00:00
   push:
     branches:
-      - "master"
+      - "master-actions"
       - "api-only"
+      - "*-actions"
   pull_request:
     branches: "*"
     paths-ignore:
